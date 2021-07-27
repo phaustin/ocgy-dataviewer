@@ -1,0 +1,15 @@
+.ipynb_checkpoints
+*.ipynb
+full_data
+Assignment_egeotraces/images
+ocese-tasks-eosc372.docx
+MappedData-DemoApp01
+Assignment6/EOSC 372 Assignment_6 6_KEY.pdf
+Assignment6/EOSC 372 Assignment_6.6.pdf
+Assignment_egeotraces/egeotraces_dash/.idea
+Assignment_egeotraces/egeotraces_dash/etc
+Assignment_egeotraces/egeotraces_dash/Include
+Assignment_egeotraces/egeotraces_dash/Lib
+Assignment_egeotraces/egeotraces_dash/Scripts
+Assignment_egeotraces/egeotraces_dash/share
+Assignment_egeotraces/egeotraces_dash/__pycache__
