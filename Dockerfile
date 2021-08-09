@@ -1,20 +1,12 @@
-FROM python:3.8-slim-buster
+FROM phaustin/base_image:aug07
 
-# Create a working directory.
-RUN mkdir wd
-WORKDIR /wd/
+USER ${NB_USER}
 
-# Copy requirements
-COPY requirements.txt /wd/
+RUN mkdir -p ${HOME}/dashdir
 
-# Install requirements
-RUN pip3 install -r requirements.txt
+COPY dashdir/ ${HOME}/dashdir/
 
-# Copy data
-COPY data /wd/data
-
-# Copy code
-COPY app.py /wd/
+RUN echo "conda activate ${CONDA_ENV}" >> ${HOME}/.bashrc
 
 # Command to run this program
 CMD [ "gunicorn", "--workers=5", "--threads=1", "-b 0.0.0.0:8000", "app:server"]

@@ -1,0 +1,45 @@
+#
+# 
+#
+version: '3.8'
+
+services:
+  ocgy_dash:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: phaustin/ocgy:aug07
+    container_name: ocgy_aug07
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=Host:${HOST}; Path:/ocgydash"
+      - "traefik.dashboard.port=8000"
+    networks:
+      - proxy_aug07
+    working_dir: /home/jovyan/dashdir
+    command: gunicorn --workers=5 --threads=1 -b 0.0.0.0:8000 app:server
+
+  traefik:
+    image: traefik:v1.7.3
+    command: --docker
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - proxy_aug07
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${PWD}/traefik/traefik.toml:/traefik.toml
+      - ${PWD}/traefik/acme.json:/acme.json
+    labels:
+      - "traefik.frontend.rule=Host:traefik.eoastest5.xyz"
+      - "traefik.port=8080"
+    container_name: traefik
+    restart: always
+
+networks:
+    proxy_aug07:
+      driver: bridge
+      name: proxy_aug07
