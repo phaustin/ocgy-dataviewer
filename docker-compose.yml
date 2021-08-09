@@ -17,7 +17,7 @@ services:
     networks:
       - proxy_aug07
     working_dir: /home/jovyan/dashdir
-    command: gunicorn --workers=5 --threads=1 -b 0.0.0.0:8000 app:server
+    command: gunicorn --workers=1 --threads=1 -b 0.0.0.0:8000 app:server
 
 networks:
     proxy_aug07:
