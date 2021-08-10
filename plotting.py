@@ -5,26 +5,30 @@ import pandas as pd
 import station
 
 # see Python routine "parse-csv.py" for the method of filtering data and making these csv files
-GIPY05 = pd.read_csv("data/GIPY05_filtered.csv")
-GIPY04 = pd.read_csv("data/GIPY04_filtered.csv")
-GA03 = pd.read_csv("data/GA03_filtered.csv")
-GP02 = pd.read_csv("data/GP02_filtered.csv")
+GIPY05 = pd.read_csv("./data/GIPY05_filtered.csv")
+GIPY04 = pd.read_csv("./data/GIPY04_filtered.csv")
+GA03 = pd.read_csv("./data/GA03_filtered.csv")
+GP02 = pd.read_csv("./data/GP02_filtered.csv")
 GIPY0405 = pd.concat([GIPY04, GIPY05], ignore_index=True) #merging the csv files for GIPY04 and GIPY05
 
 #global variables to keep track of the hovered and clicked stations for plotting
 hov_station = station.Station('hover', None, None, None, 'blue')
 click_stations = []
 
-colours = ['darkred', 'darkorange', 'gold', 'forestgreen', 'darkviolet', 'deeppink']
-colour_index = -1
+colours = ['darkred', 'limegreen', 'red', 'sienna', 'darkorange', 'darkgreen', 'darkviolet', 'deeppink']
 
 ###SUBPLOTS PLOTTING
+def contains_colour(list_stations, colour):
+    for s in list_stations:
+        if s.colour == colour:
+            return True
+    return False
+
 def get_colour():
-    global colour_index, colours
-    colour_index += 1
-    if colour_index >= len(colours):
-        colour_index = 0
-    return colours[colour_index]
+    for c in colours:
+        if contains_colour(click_stations, c) == False:
+            return c
+    return 'black'
 
 #get lat and lons from hoverData
 def set_hov_lat_lon_values(hov_data):
@@ -46,9 +50,10 @@ def set_click_lat_lon_values(click_data, cruise, new_cruise):
         pass
     # when you click on a point that is already clicked, the hovertext is not in the click_data dict
     # in that case, we keep the click_lat, lon and station the same
-    elif 'hovertext' not in click_data['points'][0]: ###how do we know which one to remove god ***
+    elif 'hovertext' not in click_data['points'][0]:
         lat = click_data['points'][0]['lat']
         lon = click_data['points'][0]['lon']
+
         station.remove_from_list(lat, lon, click_stations)
     else:
         lat = click_data['points'][0]['lat']
@@ -77,19 +82,19 @@ def update_x_range(fig, x_range, cruise):
         #adjusting the x-axis for temperature, ratio, density based on the cruise
         if cruise == 'GIPY0405':
             fig.update_xaxes(range=[-5, 25], row=1, col=1) #temp
-            fig.update_xaxes(range=[-10000, 1000 * 650], row=1, col=5) #ratio
-            fig.update_xaxes(range=[24, 28], row=1, col=6)  # density
+            fig.update_xaxes(range=[-10, 650], row=1, col=6) #ratio
+            fig.update_xaxes(range=[24, 28], row=1, col=2)  # density
         elif cruise == 'GA03':
             fig.update_xaxes(range=[5, 35], row=1, col=1) #temp
-            fig.update_xaxes(range=[-10000, 1000 * 50], row=1, col=5) #ratio
-            fig.update_xaxes(range=[22, 28], row=1, col=6)  # density
+            fig.update_xaxes(range=[-10, 50], row=1, col=6) #ratio
+            fig.update_xaxes(range=[22, 28], row=1, col=2)  # density
         elif cruise == 'GP02':
             fig.update_xaxes(range=[0, 30], row=1, col=1) #temp
-            fig.update_xaxes(range=[-10000, 1000 * 250], row=1, col=5) #ratio
-            fig.update_xaxes(range=[21, 28], row=1, col=6)  # density
-        fig.update_xaxes(range=[30, 37], row=1, col=2) #salinity
-        fig.update_xaxes(range=[-2, 45], row=1, col=3) #nitrate
-        fig.update_xaxes(range=[-0.1, 2], row=1, col=4) #iron
+            fig.update_xaxes(range=[-10, 250], row=1, col=6) #ratio
+            fig.update_xaxes(range=[21, 28], row=1, col=2)  # density
+        fig.update_xaxes(range=[30, 37], row=1, col=3) #salinity
+        fig.update_xaxes(range=[-2, 45], row=1, col=4) #nitrate
+        fig.update_xaxes(range=[-0.1, 2], row=1, col=5) #iron
     elif x_range == 'fitted':
         fig.update_xaxes(autorange=True) #letting plotly select the x-range for 'fitted' data
     fig.update_xaxes(nticks=3) #limiting the number of x-axis ticks so the plots don't change height
@@ -141,8 +146,8 @@ def clear_click_traces(fig):
 #initialize the profiles
 def initialize_profiles(cruise, x_range, y_range):
     #global click_stations
-    fig = make_subplots(rows=1, cols=6, subplot_titles=("<b>Temperature</b>", "<b>Salinity</b>", "<b>Nitrate</b>",
-                                                        "<b>Iron</b>", "<b>Nitrate:Iron</b>", "<b>Sigma0</b>"))
+    fig = make_subplots(rows=1, cols=6, subplot_titles=("<b>Temperature</b>", "<b>Sigma0*</b>", "<b>Salinity</b>", "<b>Nitrate</b>",
+                                                        "<b>Iron</b>", "<b>Nitrate/Iron</b>"))
 
 
     # empty traces for hovered data
@@ -155,27 +160,30 @@ def initialize_profiles(cruise, x_range, y_range):
 
     #print(figT.data[0])
     fig.add_trace(figT.data[0], row=1, col=1)
-    fig.add_trace(figS.data[0], row=1, col=2)
-    fig.add_trace(figN.data[0], row=1, col=3)
-    fig.add_trace(figI.data[0], row=1, col=4)
-    fig.add_trace(figR.data[0], row=1, col=5)
-    fig.add_trace(figD.data[0], row=1, col=6)
+    fig.add_trace(figD.data[0], row=1, col=2)
+    fig.add_trace(figS.data[0], row=1, col=3)
+    fig.add_trace(figN.data[0], row=1, col=4)
+    fig.add_trace(figI.data[0], row=1, col=5)
+    fig.add_trace(figR.data[0], row=1, col=6)
+
 
     for i in range(8):
         #traces for clicked data
         figT = px.scatter(x=[None], y=[None])
+        figD = px.scatter(x=[None], y=[None])
         figS = px.scatter(x=[None], y=[None])
         figN = px.scatter(x=[None], y=[None])
         figI = px.scatter(x=[None], y=[None])
         figR = px.scatter(x=[None], y=[None])
-        figD = px.scatter(x=[None], y=[None])
+
 
         fig.add_trace(figT.data[0], row=1, col=1)
-        fig.add_trace(figS.data[0], row=1, col=2)
-        fig.add_trace(figN.data[0], row=1, col=3)
-        fig.add_trace(figI.data[0], row=1, col=4)
-        fig.add_trace(figR.data[0], row=1, col=5)
-        fig.add_trace(figD.data[0], row=1, col=6)
+        fig.add_trace(figD.data[0], row=1, col=2)
+        fig.add_trace(figS.data[0], row=1, col=3)
+        fig.add_trace(figN.data[0], row=1, col=4)
+        fig.add_trace(figI.data[0], row=1, col=5)
+        fig.add_trace(figR.data[0], row=1, col=6)
+
 
     #fig = update_legend(fig, None, cruise)
     fig.update_yaxes(range=y_range)
@@ -186,11 +194,12 @@ def initialize_profiles(cruise, x_range, y_range):
 
     #customize x axes
     fig.update_xaxes(title_text='deg C', row=1, col=1)
-    fig.update_xaxes(title_text='Practical Salinity', row=1, col=2)
-    fig.update_xaxes(title_text="umol/kg", row=1, col=3)
-    fig.update_xaxes(title_text="nmol/kg", row=1, col=4)
-    fig.update_xaxes(title_text="", row=1, col=5)
-    fig.update_xaxes(title_text="kg/m\u00B3", row=1, col=6) #unicode for the m^3
+    fig.update_xaxes(title_text="kg/m\u00B3", row=1, col=2) #unicode for the m^3
+    fig.update_xaxes(title_text='Practical Salinity', row=1, col=3)
+    fig.update_xaxes(title_text="umol/kg", row=1, col=4)
+    fig.update_xaxes(title_text="nmol/kg", row=1, col=5)
+    fig.update_xaxes(title_text="umol/nmol", row=1, col=6)
+
 
     fig = update_x_range(fig, x_range, cruise)
     fig = update_legend(fig, 'click', cruise)
@@ -222,18 +231,20 @@ def update_profiles(hov_data, click_data, cruise, fig, x_range, y_range):
         #set_hov_lat_lon_values(hov_data)
 
         hov_xvals_temp, hov_yvals_temp = get_x_y_values(cruise, hov_station.lat, hov_station.lon, 'Temperature')
+        hov_xvals_dens, hov_yvals_dens = get_x_y_values(cruise, hov_station.lat, hov_station.lon, 'Density')
         hov_xvals_sal, hov_yvals_sal = get_x_y_values(cruise, hov_station.lat, hov_station.lon, 'Salinity')
         hov_xvals_nit, hov_yvals_nit = get_x_y_values(cruise, hov_station.lat, hov_station.lon, 'Nitrate')
         hov_xvals_iron, hov_yvals_iron = get_x_y_values(cruise, hov_station.lat, hov_station.lon, 'Iron')
         hov_xvals_ratio, hov_yvals_ratio = get_x_y_values(cruise, hov_station.lat, hov_station.lon, 'Ratio')
-        hov_xvals_dens, hov_yvals_dens = get_x_y_values(cruise, hov_station.lat, hov_station.lon, 'Density')
+
 
         fig.data[0].update(x=hov_xvals_temp, y=hov_yvals_temp)
-        fig.data[1].update(x=hov_xvals_sal, y=hov_yvals_sal)
-        fig.data[2].update(x=hov_xvals_nit, y=hov_yvals_nit)
-        fig.data[3].update(x=hov_xvals_iron, y=hov_yvals_iron)
-        fig.data[4].update(x=hov_xvals_ratio, y=hov_yvals_ratio)
-        fig.data[5].update(x=hov_xvals_dens, y=hov_yvals_dens)
+        fig.data[1].update(x=hov_xvals_dens, y=hov_yvals_dens)
+        fig.data[2].update(x=hov_xvals_sal, y=hov_yvals_sal)
+        fig.data[3].update(x=hov_xvals_nit, y=hov_yvals_nit)
+        fig.data[4].update(x=hov_xvals_iron, y=hov_yvals_iron)
+        fig.data[5].update(x=hov_xvals_ratio, y=hov_yvals_ratio)
+
     else:
         fig = clear_hover_traces(fig)
 
@@ -243,18 +254,20 @@ def update_profiles(hov_data, click_data, cruise, fig, x_range, y_range):
         for i in range(8):
             if i < len(click_stations):
                 click_xvals_temp, click_yvals_temp = get_x_y_values(cruise, click_stations[i].lat, click_stations[i].lon, 'Temperature')
+                click_xvals_dens, click_yvals_dens = get_x_y_values(cruise, click_stations[i].lat, click_stations[i].lon, 'Density')
                 click_xvals_sal, click_yvals_sal = get_x_y_values(cruise, click_stations[i].lat, click_stations[i].lon, 'Salinity')
                 click_xvals_nit, click_yvals_nit = get_x_y_values(cruise, click_stations[i].lat, click_stations[i].lon, 'Nitrate')
                 click_xvals_iron, click_yvals_iron = get_x_y_values(cruise, click_stations[i].lat, click_stations[i].lon, 'Iron')
                 click_xvals_ratio, click_yvals_ratio = get_x_y_values(cruise, click_stations[i].lat, click_stations[i].lon, 'Ratio')
-                click_xvals_dens, click_yvals_dens = get_x_y_values(cruise, click_stations[i].lat, click_stations[i].lon, 'Density')
+
 
                 fig.data[6 + i * 6].update(x=click_xvals_temp, y=click_yvals_temp, marker_color=click_stations[i].colour)
-                fig.data[7 + i * 6].update(x=click_xvals_sal, y=click_yvals_sal, marker_color=click_stations[i].colour)
-                fig.data[8 + i * 6].update(x=click_xvals_nit, y=click_yvals_nit, marker_color=click_stations[i].colour)
-                fig.data[9 + i * 6].update(x=click_xvals_iron, y=click_yvals_iron, marker_color=click_stations[i].colour)
-                fig.data[10 + i * 6].update(x=click_xvals_ratio, y=click_yvals_ratio, marker_color=click_stations[i].colour)
-                fig.data[11 + i * 6].update(x=click_xvals_dens, y=click_yvals_dens, marker_color=click_stations[i].colour)
+                fig.data[7 + i * 6].update(x=click_xvals_dens, y=click_yvals_dens, marker_color=click_stations[i].colour)
+                fig.data[8 + i * 6].update(x=click_xvals_sal, y=click_yvals_sal, marker_color=click_stations[i].colour)
+                fig.data[9 + i * 6].update(x=click_xvals_nit, y=click_yvals_nit, marker_color=click_stations[i].colour)
+                fig.data[10 + i * 6].update(x=click_xvals_iron, y=click_yvals_iron, marker_color=click_stations[i].colour)
+                fig.data[11 + i * 6].update(x=click_xvals_ratio, y=click_yvals_ratio, marker_color=click_stations[i].colour)
+
             else:
                 fig.data[6 + i * 6].update(x=[], y=[])
                 fig.data[7 + i * 6].update(x=[], y=[])
@@ -287,11 +300,15 @@ def map_initialize_cruise(fig, cruise):
     for i in range(len(click_stations)):
         fig.add_trace(go.Scattermapbox(lat=[click_stations[i].lat], lon=[click_stations[i].lon], showlegend=False, hovertemplate="<b>" + str(click_stations[i].name) +
                                          "</b><br><br>Latitude=%{lat} </br> Longitude=%{lon}<extra></extra>",
-                                       mode='markers', marker=go.scattermapbox.Marker(size=10, color=colours[i])))
+                                       mode='markers', marker=go.scattermapbox.Marker(size=10, color=click_stations[i].colour)))
+        #fig.update(lataxis_showgrid=True, lonaxis_showgrid=True)
+        #fig.update_geos(lataxis_showgrid=True, lonaxis_showgrid=True)
+
+
 
     return fig
 
-def plot_stations( cruise):
+def plot_stations(cruise):
     if cruise == 'GIPY0405':
         fig = px.scatter_mapbox(GIPY0405, lat="Latitude", lon="Longitude", hover_name="Station",
                                 color_discrete_sequence=['blue'], zoom=1.2, center=dict(lat=-50, lon=0))
@@ -304,6 +321,16 @@ def plot_stations( cruise):
                                 color_discrete_sequence=['blue'],
                                 zoom=1.2)
     fig.update_layout(mapbox_style="open-street-map")
+
+
+    # adding markers from: https://plotly.com/python/scattermapbox/
+    if (len(click_stations) != 0):
+        for i in range(len(click_stations)):
+            fig.add_trace(go.Scattermapbox(lat=[click_stations[i].lat], lon=[click_stations[i].lon], showlegend=False,
+                                           hovertemplate="<b>" + str(click_stations[i].name) +
+                                                         "</b><br><br>Latitude=%{lat} </br> Longitude=%{lon}<extra></extra>",
+                                           mode='markers', marker=go.scattermapbox.Marker(size=10, color=click_stations[i].colour)))
+
     return fig
 
 #figure functions
@@ -324,7 +351,7 @@ def initialize_map(cruise):
 def switch_map(cruise, fig):
     fig.data = []
     fig = plot_stations(cruise)
-
+    
     fig = map_initialize_cruise(fig, cruise)  # initializes the click for the new cruise
 
     if cruise == 'GIPY0405':
@@ -348,16 +375,6 @@ def update_map(hov_data, click_data, figure_data, cruise, fig):
     if figure_data is not None: #set map layout to its previous settings, so the zoom and position doesn't reset
         fig.layout['mapbox'] = figure_data['layout']['mapbox']
 
-    # adding markers from: https://plotly.com/python/scattermapbox/
-    if (len(click_stations) != 0):
-        for i in range(len(click_stations)):
-            fig.add_trace(go.Scattermapbox(lat=[click_stations[i].lat], lon=[click_stations[i].lon], showlegend=False,
-                                           hovertemplate="<b>" + str(click_stations[i].name) +
-                                                         "</b><br><br>Latitude=%{lat} </br> Longitude=%{lon}<extra></extra>",
-                                           mode='markers', marker=go.scattermapbox.Marker(size=10, color=click_stations[i].colour)))
-    else:
-        #fig = map_initialize_cruise(fig, cruise)  # initializes the click for the new cruise
-        pass
 
     if cruise == 'GIPY0405':
         fig.update_layout(margin={"r": 0, "t": 40, "l": 0, "b": 0}, title='GIPY04 and GIPY05')
