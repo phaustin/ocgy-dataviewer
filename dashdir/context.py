@@ -8,8 +8,23 @@ to use this in another module:
 import context
 
 then use context.data_dir and context.root_dir to read data files etc. and
-context.__version__ to access the version number
+context.__version__ to access the version number.  It also adds root_dir
+to sys.path so that dashdir can be used for library imports -- i.e. 
+
+import dashdir
+
+will allow access from other modules to dashdir.plotting, dashdir.station etc.
+
+By doing this you can replace code with hard-coded paths like this
+
+GIPY05 = pd.read_csv("./data/GIPY05_filtered.csv")
+
+with the more robust:
+
+GIPY05 = pd.read_csv(Path(data_dir / "GIPY05_filtered.csv"))
+
 """
+
 import sys
 from pathlib import Path
 
