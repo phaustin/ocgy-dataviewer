@@ -1,5 +1,5 @@
 """
-this module defines absolute paths and reads a verion number from the file
+this module defines absolute paths and reads a version number from the file
 VERSION if it exists.  If it doesn't find VERSION, it creates the file
 and writes "no_version" for the version number.
 
