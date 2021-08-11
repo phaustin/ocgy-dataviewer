@@ -3,12 +3,17 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import pandas as pd
 import station
+from pathlib import Path
+import context
+data_dir = context.data_dir
+version = context.__version__
+print(f"{version=}")
 
 # see Python routine "parse-csv.py" for the method of filtering data and making these csv files
-GIPY05 = pd.read_csv("./data/GIPY05_filtered.csv")
-GIPY04 = pd.read_csv("./data/GIPY04_filtered.csv")
-GA03 = pd.read_csv("./data/GA03_filtered.csv")
-GP02 = pd.read_csv("./data/GP02_filtered.csv")
+GIPY05 = pd.read_csv(Path(data_dir / "GIPY05_filtered.csv"))
+GIPY04 = pd.read_csv(Path(data_dir / "GIPY04_filtered.csv"))
+GA03 = pd.read_csv(Path(data_dir / "GA03_filtered.csv"))
+GP02 = pd.read_csv(Path (data_dir / "GP02_filtered.csv"))
 GIPY0405 = pd.concat([GIPY04, GIPY05], ignore_index=True) #merging the csv files for GIPY04 and GIPY05
 
 #global variables to keep track of the hovered and clicked stations for plotting

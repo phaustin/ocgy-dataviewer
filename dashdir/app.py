@@ -17,6 +17,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 
 import plotting as plot
+import context
 
 #initial settings for the plots
 initial_cruise = 'GIPY0405'
