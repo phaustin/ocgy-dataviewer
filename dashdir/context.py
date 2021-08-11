@@ -1,3 +1,15 @@
+"""
+this module defines absolute paths and reads a verion number from the file
+VERSION if it exists.  If it doesn't find VERSION, it creates the file
+and writes "no_version" for the version number.
+
+to use this in another module:
+
+import context
+
+then use context.data_dir and context.root_dir to read data files etc. and
+context.__version__ to access the version number
+"""
 import sys
 from pathlib import Path
 
