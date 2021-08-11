@@ -3,17 +3,18 @@ this module defines absolute paths and reads a verion number from the file
 VERSION if it exists.  If it doesn't find VERSION, it creates the file
 and writes "no_version" for the version number.
 
-to use this in another module:
+to use this in another module in the dashdir directory do:
 
 import context
 
 then use context.data_dir and context.root_dir to read data files etc. and
 context.__version__ to access the version number.  It also adds root_dir
-to sys.path so that dashdir can be used for library imports -- i.e. 
+to sys.path so that dashdir can be used for library imports -- i.e. for  modules
+outside of the dashdir directory
 
 import dashdir
 
-will allow access from other modules to dashdir.plotting, dashdir.station etc.
+will allow access to dashdir.plotting, dashdir.station etc.
 
 By doing this you can replace code with hard-coded paths like this
 
