@@ -10,6 +10,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
+      - "8050:8050"
+      
     image: phaustin/ocgy:aug07
     container_name: ocgy_aug07
     volumes:
@@ -17,8 +19,9 @@ services:
     networks:
       - proxy_aug07
     working_dir: /home/jovyan/dashdir
-    command: gunicorn --workers=5 --threads=1 -b 0.0.0.0:8000 app:server
-
+    #command: gunicorn --workers=5 --threads=1 -b 0.0.0.0:8000 app:server
+    command: python app.py
+    
 networks:
     proxy_aug07:
       driver: bridge
